@@ -76,28 +76,25 @@
     background: #fff; margin: 0 auto 24px; box-shadow: 0 2px 14px rgba(0,0,0,0.12);
     position: relative;
   }
-  .doc-page.letter { width: 8.5in; min-height: 11in; padding: 0.85in 0.9in; }
-  .doc-page.landscape { width: 11in; height: 8.5in; padding: 0.3in; }
-  .letter-corner-seal {
-    position: absolute; bottom: 0.6in; right: 0.85in; width: 95px; opacity: 0.95;
-  }
+  .doc-page.letter { width: 8.5in; height: 11in; padding: 11pt 72pt 0 72pt; overflow: hidden; }
+  .letter-corner-seal { position: absolute; bottom: 10pt; right: 63pt; width: 54pt; height: 54pt; }
 
-  /* Memo letterhead */
+  /* Memo letterhead (measured from the official AOC letter) */
   .doc-page.letter { font-family: 'Times New Roman', Times, serif; color: #000; }
-  .letterhead { display: flex; gap: 14px; align-items: flex-start; margin: 0 auto 22px; width: fit-content; }
-  .letterhead img { width: 58px; height: 58px; margin-top: 2px; }
+  .letterhead { display: flex; align-items: flex-start; margin: 0 0 27pt 137pt; }
+  .letterhead > img { width: 63pt; height: auto; margin: 10pt 4pt 0 0; flex-shrink: 0; }
   .letterhead .lh-right { display: flex; flex-direction: column; }
-  .letterhead .lh-address { border-left: 2px solid var(--script-blue); padding-left: 14px; }
-  .letterhead .lh-address p { margin: 0; line-height: 1.32; color: var(--script-blue); font-size: 12pt; font-family: 'Times New Roman', Times, serif; }
-  .letterhead .lh-address p.b1 { font-weight: 700; font-size: 12pt; }
-  .letterhead .lh-address p.b2 { font-weight: 700; }
-  .letterhead .lh-date { padding-left: 16px; margin: 20px 0 0; color: #000; font-weight: 400; font-size: 12pt; font-family: 'Times New Roman', Times, serif; }
-  .memo-field { display: flex; font-size: 12pt; margin-bottom: 10px; line-height: 1.4; }
-  .memo-field .lbl { font-weight: 400; width: 210px; flex-shrink: 0; white-space: nowrap; }
+  .letterhead .lh-address { border-left: 1.25pt solid #000; padding: 7pt 0 2pt 29pt; }
+  .letterhead .lh-address p { margin: 0; line-height: 1.15; color: #00006C; font-size: 10pt; font-family: 'Times New Roman', Times, serif; white-space: nowrap; }
+  .letterhead .lh-address p.b1, .letterhead .lh-address p.b2 { font-weight: 700; }
+  .letterhead .lh-address p.gap { margin-top: 5.7pt; }
+  .letterhead .lh-date { margin: 32pt 0 0 33pt; color: #000; font-size: 12pt; line-height: 1.15; font-family: 'Times New Roman', Times, serif; }
+  .memo-field { display: flex; font-size: 12pt; margin-bottom: 13.8pt; line-height: 1.15; }
+  .memo-field .lbl { font-weight: 400; width: 144pt; flex-shrink: 0; white-space: nowrap; }
   .memo-field .val { flex: 1; white-space: pre-line; }
-  .memo-body p { font-size: 12pt; line-height: 1.5; margin: 0 0 12px; text-align: left; }
-  .memo-body .aircraft-line { text-align: center; font-weight: 400; margin: 14px 0; }
-  .memo-cc { font-size: 12pt; margin-top: 30px; white-space: pre-line; }
+  .memo-body p { font-size: 12pt; line-height: 1.15; margin: 0 0 13.8pt; text-align: left; }
+  .memo-body .aircraft-line { text-align: left; margin: 0 0 11.5pt 144pt; }
+  .memo-cc { font-size: 12pt; line-height: 1.15; margin-top: 41.4pt; white-space: pre-line; }
   .page-break { page-break-before: always; }
 
   /* Certificate */
@@ -300,6 +297,12 @@ function fmtDate(iso) {
   return dt.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+function fmtMemoDate(iso) {
+  const [y,m,d] = iso.split('-').map(Number);
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return d + ' ' + months[m-1] + ' ' + y;
+}
+
 function esc(s) {
   return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -309,7 +312,7 @@ function ccBlock(baseLines, extraCc) {
   if (extraCc) {
     extraCc.split(',').map(s => s.trim()).filter(Boolean).forEach(entry => lines.push(entry));
   }
-  return 'cc:   ' + lines.join('\n      ');
+  return 'cc: ' + lines.join('\n');
 }
 
 // ---------------- Document templates ----------------
@@ -331,7 +334,7 @@ function letterheadHtml(addressLines, dateStr) {
 }
 
 const AOC_ADDRESS = `
-        <p class="b2">Aircraft Operations Center</p>
+        <p class="b2 gap">Aircraft Operations Center</p>
         <p>3450 Flightline Drive</p>
         <p>Lakeland, Florida 33811-2836</p>`;
 
@@ -340,7 +343,7 @@ const RADM_ADDRESS = `
         <p>Silver Spring, Maryland 20910-3282</p>`;
 
 function buildDesignationLetter(f, rankName, positionTitle) {
-  const dateStr = fmtDate(f.date);
+  const dateStr = fmtMemoDate(f.date);
   return `
   <div class="doc-page letter">
     ${letterheadHtml(AOC_ADDRESS, dateStr)}
@@ -351,15 +354,15 @@ function buildDesignationLetter(f, rankName, positionTitle) {
       <p>You are designated a ${esc(positionTitle)} for the following aircraft:</p>
       <p class="aircraft-line">${esc(f.aircraft)}</p>
       <p>You have completed the requirements set forth in the Aircraft Operations Center (AOC) Operations Manual and have demonstrated that you possess the judgment, initiative, and skill to ensure successful accomplishment of the assigned missions. The responsibilities which accompany this designation are extremely important.</p>
-      <p>I have every confidence that you will execute your responsibilities in a manner that reflects credit on yourself, AOC, and the National Oceanic and Atmospheric Administration.</p>
-      <p>Congratulations!</p>
+      <p>I have every confidence that you will execute your responsibilities in a manner that reflects credit on yourself, AOC, and the National Oceanic and Atmospheric Administration. Congratulations!</p>
     </div>
     <div class="memo-cc">${ccBlock(['CPC – Officer Personnel File', 'AOC – Flight Section'], f.extraCc)}</div>
+    <img class="letter-corner-seal" src="${ASSETS.noaa_seal}" alt="NOAA seal">
   </div>`;
 }
 
 function buildAviatorDesignationLetter(f, rankName) {
-  const dateStr = fmtDate(f.date);
+  const dateStr = fmtMemoDate(f.date);
   return `
   <div class="doc-page letter">
     ${letterheadHtml(AOC_ADDRESS, dateStr)}
@@ -373,7 +376,7 @@ function buildAviatorDesignationLetter(f, rankName) {
   </div>
   <div class="doc-page letter page-break">
     ${letterheadHtml(RADM_ADDRESS)}
-    <div class="memo-field" style="margin-top:40px;"><div class="lbl">MEMORANDUM FOR:</div><div class="val">${esc(rankName)}, NOAA</div></div>
+    <div class="memo-field" style="margin-top:40pt;"><div class="lbl">MEMORANDUM FOR:</div><div class="val">${esc(rankName)}, NOAA</div></div>
     <div class="memo-field"><div class="lbl">FROM:</div><div class="val">${esc(settings.radmName)}\nDirector, NOAA Corps</div></div>
     <div class="memo-field"><div class="lbl">SUBJECT:</div><div class="val">Designation as NOAA Corps Aviator</div></div>
     <div class="memo-body">
